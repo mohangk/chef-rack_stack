@@ -38,7 +38,7 @@ deploy_group =  'vagrant'
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, environment].join("_")
 
-stage_data = 'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
+stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 # Set up directory and file name info for SSL certs
 ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{environment}/" : ""
 ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
