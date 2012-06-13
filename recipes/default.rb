@@ -17,6 +17,7 @@ include_recipe 'apache2::default'
 include_recipe 'apache2::mod_expires'
 include_recipe "apache2::mod_xsendfile"
 include_recipe 'rvm::system'
+include_recipe 'memcached'
 #we don't want this when deployin on EC2
 if node[:instance_role] == 'vagrant'
   include_recipe 'rvm::vagrant'
