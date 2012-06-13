@@ -31,16 +31,16 @@ include_recipe 'imagemagick::devel'
 include_recipe 'redisio::install'
 include_recipe 'redisio::enable'
 
-stage_name = 'development'
+environment = node['rack_stack']['environment']
 appname = 'Pie'
 deploy_user = 'vagrant'
 deploy_group =  'vagrant'
 base_path = "/home/#{deploy_user}/#{appname}"
-instance_name = [appname, stage_name].join("_")
+instance_name = [appname, environment].join("_")
 
-stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
+stage_data = 'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 # Set up directory and file name info for SSL certs
-ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{stage_name}/" : ""
+ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{environment}/" : ""
 ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
 ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
 ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
@@ -74,7 +74,7 @@ end
 
 app_config(instance_name) do
   docroot                   "#{base_path}/current/public"
-  rack_env                  stage_name
+  rack_env                  environment
   server_name               stage_data['hostname']
   server_aliases            stage_data['aliases'] || []
   server_admin              stage_data['admin'] || 'root@localhost'
