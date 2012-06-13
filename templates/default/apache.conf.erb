@@ -1,0 +1,90 @@
+<Directory <%= @params[:docroot] %>>
+    <% if @params[:rack_env] %>
+    RackEnv                 "<%= @params[:rack_env] %>"
+    <% end %>
+    <% if @params[:passenger_min_instances] %>
+    PassengerMinInstances   <%= @params[:passenger_min_instances] %>
+    <% end %>
+    
+    FileETag        None  
+    ExpiresActive   On
+    <FilesMatch "\.(ico|gif|jpe?g|png|js|css)$">
+        ExpiresDefault "access plus 1 year"
+    </FilesMatch>
+
+    #XSendFile on
+    #XSendFileAllowAbove on
+
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/javascript text/css application/javascript
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+</Directory>
+
+<VirtualHost <%= "#{@params[:ip_address]}:#{@params[:port]}" %>>
+    <% if @params[:server_name] and not @params[:server_name].empty? %>
+    ServerName    <%= @params[:server_name] %>
+    <% else %>
+    ServerName <%= node.name %>
+    <% end %>
+
+    <% if @params[:server_aliases].length > 0 %>
+    <% [ @params[:server_aliases] ].flatten.compact.uniq.each do |server_alias| %>
+    ServerAlias   <%= server_alias %>
+    <% end %>
+    <% else %>
+    ServerAlias   <%= node.fqdn %>
+    <% end %>
+
+    ServerAdmin <%= @params[:server_admin] %> 
+    
+    DocumentRoot  <%= @params[:docroot] %>
+
+    <% [ @params[:redirect_from] ].flatten.compact.uniq.each do |host| %>
+    RewriteEngine On
+    RewriteCond   %{HTTP_HOST}  /^<%= host.gsub(/\./, "\\.") %>$/ [NC]
+    RewriteRule   ^(.*)$        http://<%= @params[:server_name] %>$1 [R=301,L]
+    <% end %>
+    
+    <LocationMatch "^/assets/.*$">
+      Header unset ETag
+      FileETag None
+      # RFC says only cache for 1 year
+      ExpiresActive On
+      ExpiresDefault "access plus 1 year"
+    </LocationMatch>
+</VirtualHost>
+
+
+<% if @params[:enable_ssl] %>
+<VirtualHost *:<%= @params[:ssl_port] %>>
+    <% if @params[:server_name] and not @params[:server_name].empty? %>
+    ServerName    <%= @params[:server_name] %>
+    <% end %>
+
+    <% [ @params[:server_aliases] ].flatten.compact.uniq.each do |server_alias| %>
+    ServerAlias   <%= server_alias %>
+    <% end %>
+
+    DocumentRoot  <%= @params[:docroot] %>
+
+    SSLEngine     on
+    SSLCertificateFile      <%= @params[:ssl_cert_file] %>
+    SSLCertificateKeyFile   <%= @params[:ssl_cert_key_file] %>
+    SSLCertificateChainFile <%= @params[:ssl_cert_chain_file] %>
+
+    <% [ @params[:redirect_from] ].flatten.compact.uniq.each do |host| %>
+    RewriteEngine On
+    RewriteCond   %{HTTP_HOST}  /^<%= host.gsub(/\./, "\\.") %>$/ [NC]
+    RewriteRule   ^(.*)$        http://<%= @params[:server_name] %>$1 [R=301,L]
+    <% end %>
+    
+    <LocationMatch "^/assets/.*$">
+      Header unset ETag
+      FileETag None
+      # RFC says only cache for 1 year
+      ExpiresActive On
+      ExpiresDefault "access plus 1 year"
+    </LocationMatch>
+</VirtualHost>
+<% end %>
