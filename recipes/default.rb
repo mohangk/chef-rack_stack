@@ -1,7 +1,12 @@
-
 ohai "reload_passwd" do
   action :nothing
   plugin 'passwd'
+end
+
+user_account deploy_user do
+  comment "Deploy user"
+  home "/home/#{deploy_user}"
+  notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
 end
 
 include_recipe 'apache2::default'
@@ -9,10 +14,12 @@ include_recipe 'apache2::mod_expires'
 include_recipe "apache2::mod_xsendfile"
 include_recipe 'rvm::system'
 include_recipe 'memcached'
-#we don't want this when deployin on EC2
+
+#we don't want this when deploying on EC2
 if node[:instance_role] == 'vagrant'
   include_recipe 'rvm::vagrant'
 end
+
 include_recipe 'rvm_passenger::default'
 include_recipe 'rvm_passenger::apache2'
 include_recipe 'chef-postgresql::server'
@@ -28,12 +35,6 @@ appname = 'Pie'
 deploy_user = node['rack_stack']['deploy_user']
 deploy_group = node['rack_stack']['deploy_group']
 
-user_account deploy_user do
-  comment "Deploy user"
-  home "/home/#{deploy_user}"
-  notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
-end
-
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, environment].join("_")
 
@@ -44,21 +45,13 @@ ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
 ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
 ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
 
-# Create directories for all the apps and their stages
-app_directories = [
-  base_path
- # "#{base_path}/releases",
-  #"#{base_path}/shared",
-  #"#{base_path}/shared/system",
-]
-app_directories.each do |dir|
-  directory dir do
-    owner deploy_user
-    group deploy_group
-    mode "2755" # set gid so group sticks if it's different than user
-    action :create
-    recursive true  # mkdir -p
-  end
+# Create directory for the app
+directory dir do
+  owner deploy_user
+  group deploy_group
+  mode "2755" # set gid so group sticks if it's different than user
+  action :create
+  recursive true  # mkdir -p
 end
 
 bash "Set Directory Owner" do
