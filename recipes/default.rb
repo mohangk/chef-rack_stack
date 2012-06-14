@@ -14,6 +14,7 @@ end
 user_account deploy_user do
   comment "Deploy user"
   home "/home/#{deploy_user}"
+  ssh_keys node['rack_stack']['deploy_user_authorized_key']
   notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
 end
 
