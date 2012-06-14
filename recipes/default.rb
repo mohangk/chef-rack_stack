@@ -1,3 +1,11 @@
+environment = node['rack_stack']['environment']
+appname = 'Pie'
+deploy_user = node['rack_stack']['deploy_user']
+deploy_group = node['rack_stack']['deploy_group']
+
+base_path = "/home/#{deploy_user}/#{appname}"
+instance_name = [appname, environment].join("_")
+
 ohai "reload_passwd" do
   action :nothing
   plugin 'passwd'
@@ -30,14 +38,6 @@ include_recipe 'imagemagick::devel'
 include_recipe 'redisio::install'
 include_recipe 'redisio::enable'
 
-environment = node['rack_stack']['environment']
-appname = 'Pie'
-deploy_user = node['rack_stack']['deploy_user']
-deploy_group = node['rack_stack']['deploy_group']
-
-base_path = "/home/#{deploy_user}/#{appname}"
-instance_name = [appname, environment].join("_")
-
 stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 # Set up directory and file name info for SSL certs
 ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{environment}/" : ""
@@ -46,7 +46,7 @@ ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
 ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
 
 # Create directory for the app
-directory dir do
+directory base_path do
   owner deploy_user
   group deploy_group
   mode "2755" # set gid so group sticks if it's different than user
