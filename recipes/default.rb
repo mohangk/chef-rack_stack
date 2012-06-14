@@ -4,15 +4,6 @@ ohai "reload_passwd" do
   plugin 'passwd'
 end
 
-#create the vagrant user (which is used for EC2)
-unless node[:instance_role] == 'vagrant'
-  user_account "vagrant" do
-    comment "Vagrant user"
-    home '/home/vagrant'
-    notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
-  end
-end
-
 include_recipe 'apache2::default'
 include_recipe 'apache2::mod_expires'
 include_recipe "apache2::mod_xsendfile"
@@ -34,8 +25,15 @@ include_recipe 'redisio::enable'
 
 environment = node['rack_stack']['environment']
 appname = 'Pie'
-deploy_user = 'vagrant'
-deploy_group =  'vagrant'
+deploy_user = node['rack_stack']['deploy_user']
+deploy_group = node['rack_stack']['deploy_group']
+
+user_account deploy_user do
+  comment "Deploy user"
+  home "/home/#{deploy_user}"
+  notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
+end
+
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, environment].join("_")
 
@@ -45,8 +43,6 @@ ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{env
 ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
 ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
 ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
-
-
 
 # Create directories for all the apps and their stages
 app_directories = [
