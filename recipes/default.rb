@@ -1,5 +1,5 @@
 environment = node['rack_stack']['environment']
-appname = 'Pie'
+appname = node['rack_stack']['appname']
 deploy_user = node['rack_stack']['deploy_user']
 deploy_group = node['rack_stack']['deploy_group']
 
