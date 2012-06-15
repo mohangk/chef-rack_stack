@@ -93,5 +93,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-[easy_rack_stack]: https://github.com/mohangk/easy_rack_stack
-[cheffile]: https://github.com/mohangk/easy_rack_stack/blob/master/Cheffile
+[easy_rack_stack]: https://github.com/newcontext/easy_rack_stack
+[cheffile]: https://github.com/newcontext/easy_rack_stack/blob/master/Cheffile
