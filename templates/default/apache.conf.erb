@@ -15,6 +15,8 @@
     #XSendFile on
     #XSendFileAllowAbove on
 
+    AllowOverride FileInfo
+
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/javascript text/css application/javascript
     BrowserMatch ^Mozilla/4 gzip-only-text/html
     BrowserMatch ^Mozilla/4\.0[678] no-gzip
