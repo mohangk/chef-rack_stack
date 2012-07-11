@@ -28,7 +28,7 @@ This cookbook is incomplete. Use at your own peril.
 
 ## <a name="usage"></a> Usage
 
-Simply include `recipe[chef-user_stack]` in your run\_list and setup the relavant 
+Simply include `recipe[chef-rack_stack]` in your run\_list and setup the relavant 
 attributes. (More information required)
 
 ## <a name="requirements"></a> Requirements
