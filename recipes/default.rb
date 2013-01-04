@@ -23,11 +23,6 @@ end
 
 include_recipe 'postgresql::server'
 
-include_recipe 'nodejs'
-include_recipe 'imagemagick'
-include_recipe 'imagemagick::devel'
-include_recipe 'redisio::install'
-include_recipe 'redisio::enable'
 
 #stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 ## Set up directory and file name info for SSL certs
