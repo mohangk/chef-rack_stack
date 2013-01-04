@@ -2,9 +2,9 @@ node['postgresql']['password']  = {}
 node['postgresql']['password']["postgres"]  = "password"
 
 environment = 'development' #node['rack_stack']['environment']
-appname = 'Pie'
-deploy_user = 'neo' #node['rack_stack']['deploy_user']
-deploy_group = 'neo' #node['rack_stack']['deploy_group']
+appname = 'Pie'             #node['rack_stack']['application_name']
+deploy_user = 'neo_deploy'  #node['rack_stack']['deploy_user']
+deploy_group = 'neo_deploy' #node['rack_stack']['deploy_group']
 
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, environment].join("_")
@@ -21,14 +21,6 @@ user_account deploy_user do
   notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
 end
 
-#include_recipe 'apache2::default'
-#include_recipe 'apache2::mod_expires'
-#include_recipe "apache2::mod_xsendfile"
-#include_recipe 'rvm::system'
-#include_recipe 'memcached'
-
-#include_recipe 'rvm_passenger::default'
-#include_recipe 'rvm_passenger::apache2'
 include_recipe 'postgresql::server'
 
 include_recipe 'nodejs'
@@ -61,12 +53,14 @@ bash "Set Directory Owner" do
   EOH
 end
 
-web_app(instance_name) do
-  docroot                   "#{base_path}/current/public"
-  rack_env                  environment
-  rails_env                 environment
-  server_name               localhost #stage_data['hostname']
-  server_aliases            [] #stage_data['aliases'] || []
+application instance_name do
+  path          "#{base_path}/current/public"
+  owner         deploy_user
+  group         deploy_group
+#  rack_env                  environment
+#  rails_env                 environment
+#  server_name               localhost #stage_data['hostname']
+#  server_aliases            [] #stage_data['aliases'] || []
 #  server_admin              stage_data['admin'] || 'root@localhost'
 #  ip_address                stage_data['ip_address'] || '*'
 #  port                      stage_data['port'] || 80
@@ -79,9 +73,13 @@ web_app(instance_name) do
 #  ssl_cert_file             ssl_dir + ssl_cert_file
 #  ssl_cert_key_file         ssl_dir + ssl_key_file
 #  ssl_cert_chain_file       ssl_dir + ssl_chain_file
-end
 
-# Disable Apache's default site
-apache_site "000-default" do
-  enable false
+  rails do
+      
+  end
+
+  passenger_apache2 do
+
+  end
+
 end
