@@ -23,7 +23,7 @@ user_account deploy_user do
 end
 
 include_recipe 'postgresql::server'
-include_recipe 'ruby::1.9'
+include_recipe 'ruby'
 
 #stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 ## Set up directory and file name info for SSL certs
