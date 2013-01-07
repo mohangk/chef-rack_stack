@@ -49,9 +49,10 @@ bash "Set Directory Owner" do
 end
 
 application instance_name do
-  path          "#{base_path}/current/public"
-  owner         deploy_user
-  group         deploy_group
+  path              "#{base_path}/current/public"
+  owner             deploy_user
+  group             deploy_group
+
 #  rack_env                  environment
 #  rails_env                 environment
 #  server_name               localhost #stage_data['hostname']
@@ -70,11 +71,11 @@ application instance_name do
 #  ssl_cert_chain_file       ssl_dir + ssl_chain_file
 
   rails do
-      
+
   end
 
   passenger_apache2 do
-
+    webapp_template   "web_app.conf.erb"
   end
 
 end
