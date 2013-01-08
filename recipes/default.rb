@@ -25,6 +25,7 @@ end
 include_recipe 'postgresql::server'
 include_recipe 'ruby'
 include_recipe 'git'
+include_recipe 'xml'
 
 #stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 ## Set up directory and file name info for SSL certs

@@ -10,6 +10,6 @@ recipe            "default", "Get your Rails freak on"
   supports os
 end
 
-%w{git ruby application_ruby postgresql nodejs memcached imagemagick user}.each do |cb|
+%w{xml git ruby application_ruby postgresql nodejs memcached imagemagick user}.each do |cb|
   depends cb
 end
