@@ -1,7 +1,7 @@
 node['postgresql']['password']  = {}
 node['postgresql']['password']["postgres"]  = "password"
 
-rails_environment  = 'development'                           #node['rack_stack']['environment']
+rails_environment  = 'production'                           #node['rack_stack']['environment']
 appname            = 'Pie'                                   #node['rack_stack']['application_name']
 deploy_user        = 'neo_deploy'                            #node['rack_stack']['deploy_user']
 deploy_group       = 'neo_deploy'                            #node['rack_stack']['deploy_group']
@@ -85,9 +85,11 @@ application instance_name do
   rails do
     gems ['bundler']
     bundler true
+    bundle_command '/usr/local/bin/bundle'
   end
 
   passenger_apache2 do
     webapp_template   "web_app.conf.erb"
   end
+
 end
