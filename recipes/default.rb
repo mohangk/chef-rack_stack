@@ -23,7 +23,7 @@ user_account deploy_user do
 end
 
 include_recipe 'postgresql::server'
-#include_recipe 'ruby'
+include_recipe 'ruby'
 include_recipe 'git'
 
 #stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
