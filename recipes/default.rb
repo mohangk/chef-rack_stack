@@ -6,6 +6,7 @@ appname            = 'Pie'                                   #node['rack_stack']
 deploy_user        = 'neo_deploy'                            #node['rack_stack']['deploy_user']
 deploy_group       = 'neo_deploy'                            #node['rack_stack']['deploy_group']
 app_repository     = 'git://github.com/mohangk/fastrego.git' #node['rack_stack']['deploy_group']
+database_params    = node['fastrego']['database']
 
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, rails_environment].join("_")
@@ -27,12 +28,12 @@ include_recipe 'ruby'
 include_recipe 'git'
 include_recipe 'xml'
 
-#stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
-## Set up directory and file name info for SSL certs
-#ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{rails_environment}/" : ""
-#ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
-#ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
-#ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
+stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
+# Set up directory and file name info for SSL certs
+ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{rails_environment}/" : ""
+ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
+ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
+ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
 
 # Create directory for the app
 directory base_path do
@@ -58,7 +59,6 @@ application instance_name do
   group            deploy_group
   repository       app_repository
   environment_name rails_environment
-  #restart_command  "ls /tmp"
 
   before_restart do
     directory "#{base_path}/current/tmp" do
@@ -66,6 +66,24 @@ application instance_name do
       group deploy_group
       mode "2755" # set gid so group sticks if it's different than user
       action :create
+    end
+  end
+
+  before_symlink do
+    execute 'create_and_migrate_database' do
+      command 'bundle exec rake db:create db:migrate'
+      user deploy_user
+      group deploy_group
+      cwd release_path
+      environment ({'RAILS_ENV' => rails_environment })
+    end
+
+    execute 'compile_assets' do
+      command 'bundle exec rake assets:precompile'
+      user deploy_user
+      group deploy_group
+      cwd release_path
+      environment ({'RAILS_ENV' => rails_environment })
     end
   end
 
@@ -87,10 +105,14 @@ application instance_name do
     gems ['bundler']
     bundler true
     bundle_command '/usr/local/bin/bundle'
+    database do
+      database_params.each do |key, value|
+        send(key.to_sym, value)
+      end
+    end
   end
 
   passenger_apache2 do
     webapp_template   "web_app.conf.erb"
   end
-
 end
