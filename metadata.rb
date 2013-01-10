@@ -10,6 +10,7 @@ recipe            "default", "Get your Rails freak on"
   supports os
 end
 
-%w{xml git ruby application_ruby postgresql nodejs memcached imagemagick user}.each do |cb|
+#apt is required by the postgresql recipe to allow for addition of the pitti repo
+%w{apt xml git ruby application_ruby postgresql nodejs memcached imagemagick user}.each do |cb|
   depends cb
 end
