@@ -5,8 +5,7 @@ rails_environment  = 'production'                           #node['rack_stack'][
 appname            = 'Pie'                                   #node['rack_stack']['application_name']
 deploy_user        = 'neo_deploy'                            #node['rack_stack']['deploy_user']
 deploy_group       = 'neo_deploy'                            #node['rack_stack']['deploy_group']
-app_repository     = 'git://github.com/mohangk/fastrego.git' #node['rack_stack']['deploy_group']
-database_params    = node['fastrego']['database']
+app_repository     = 'git://github.com/mohangk/neo_bar.git' #node['rack_stack']['deploy_group']
 
 base_path = "/home/#{deploy_user}/#{appname}"
 instance_name = [appname, rails_environment].join("_")
@@ -27,6 +26,7 @@ include_recipe 'postgresql::server'
 include_recipe 'ruby'
 include_recipe 'git'
 include_recipe 'xml'
+include_recipe 'nodejs'
 
 stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
 # Set up directory and file name info for SSL certs
@@ -70,6 +70,7 @@ application instance_name do
   end
 
   before_symlink do
+
     execute 'create_and_migrate_database' do
       command 'bundle exec rake db:create db:migrate'
       user deploy_user
@@ -106,9 +107,8 @@ application instance_name do
     bundler true
     bundle_command '/usr/local/bin/bundle'
     database do
-      database_params.each do |key, value|
-        send(key.to_sym, value)
-      end
+      adapter 'sqlite3'
+      database 'db/production.sqlite3'
     end
   end
 
