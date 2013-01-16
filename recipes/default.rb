@@ -1,14 +1,12 @@
-node['postgresql']['password']  = {}
-node['postgresql']['password']["postgres"]  = "password"
-
-rails_environment  = 'production'                           #node['rack_stack']['environment']
-appname            = 'Pie'                                   #node['rack_stack']['application_name']
-deploy_user        = 'neo_deploy'                            #node['rack_stack']['deploy_user']
-deploy_group       = 'neo_deploy'                            #node['rack_stack']['deploy_group']
-app_repository     = 'git://github.com/mohangk/neo_bar.git' #node['rack_stack']['deploy_group']
-
-base_path = "/home/#{deploy_user}/#{appname}"
-instance_name = [appname, rails_environment].join("_")
+rails_environment  = node['chef-rack_stack']['rails']['environment']
+appname            = node['chef-rack_stack']['app']['name']
+app_repository     = node['chef-rack_stack']['app']['repo']
+deploy_user        = node['chef-rack_stack']['deploy']['user']
+deploy_group       = node['chef-rack_stack']['deploy']['group']
+base_path          = "/home/#{deploy_user}/#{appname}"
+instance_name      = "#{appname}_#{rails_environment}"
+db_name            = node['chef-rack_stack']['app']['db']
+db_password        = node['postgresql']['password']['postgres']
 
 ohai "reload_passwd" do
   action :nothing
@@ -22,18 +20,20 @@ user_account deploy_user do
   notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
 end
 
+group "neo_deploy" do
+  action :create
+  members "neo_deploy"
+end
+
 include_recipe 'postgresql::server'
 include_recipe 'ruby'
 include_recipe 'git'
 include_recipe 'xml'
 include_recipe 'nodejs'
+include_recipe 'imagemagick'
+include_recipe 'imagemagick::devel'
 
-stage_data = {'enable'=> true, 'enable_ssl' => false, 'hostname' => 'localhost'}
-# Set up directory and file name info for SSL certs
-ssl_dir        = (stage_data['enable_ssl']) ? "/etc/apache2/ssl/#{appname}/#{rails_environment}/" : ""
-ssl_cert_file  = (stage_data['enable_ssl']) ? "#{instance_name}.crt" : ""
-ssl_key_file   = (stage_data['enable_ssl']) ? "#{instance_name}.key" : ""
-ssl_chain_file = (stage_data['enable_ssl']) ? "#{instance_name}-bundle.crt" : ""
+package 'make'
 
 # Create directory for the app
 directory base_path do
@@ -42,14 +42,6 @@ directory base_path do
   mode "2755" # set gid so group sticks if it's different than user
   action :create
   recursive true
-end
-
-bash "Set Directory Owner" do
-  user "root"
-  cwd "/home/#{deploy_user}"
-  code <<-EOH
-    chown -R #{deploy_user}:#{deploy_group} *
-  EOH
 end
 
 application instance_name do
@@ -88,31 +80,29 @@ application instance_name do
     end
   end
 
-#  server_name               localhost #stage_data['hostname']
-#  server_aliases            [] #stage_data['aliases'] || []
-#  server_admin              stage_data['admin'] || 'root@localhost'
-#  ip_address                stage_data['ip_address'] || '*'
-#  port                      stage_data['port'] || 80
-#  redirect_from             stage_data['redirect_from']
-#  passenger_min_instances   stage_data['min_instances'] || 1
-#  enable                    stage_data['enable']
-#  enable_ssl                stage_data['enable_ssl']
-#  ssl_port                  stage_data['ssl_port'] || 443
-#  ssl_cert_file             ssl_dir + ssl_cert_file
-#  ssl_cert_key_file         ssl_dir + ssl_key_file
-#  ssl_cert_chain_file       ssl_dir + ssl_chain_file
-
   rails do
     gems ['bundler']
     bundler true
     bundle_command '/usr/local/bin/bundle'
     database do
-      adapter 'sqlite3'
-      database 'db/production.sqlite3'
+      adapter "postgresql"
+      database db_name
+      pool "5"
+      username 'postgres'
+      password db_password
+      host 'localhost'
     end
   end
 
-  passenger_apache2 do
-    webapp_template   "web_app.conf.erb"
+  #passenger_apache2 do
+  #  webapp_template "web_app.conf.erb"
+  #end
+
+  unicorn do
+    bundler true
+    preload_app true
+    worker_processes 10
+    port '8080'
+    worker_timeout 30
   end
 end

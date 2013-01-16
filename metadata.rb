@@ -11,6 +11,6 @@ recipe            "default", "Get your Rails freak on"
 end
 
 #apt is required by the postgresql recipe to allow for addition of the pitti repo
-%w{apt xml git ruby application_ruby postgresql nodejs memcached imagemagick user}.each do |cb|
+%w{apt xml git ruby application_ruby postgresql nodejs imagemagick user}.each do |cb|
   depends cb
 end
