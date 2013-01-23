@@ -1,0 +1,18 @@
+<VirtualHost *:80>
+
+  ServerName <%= @params[:server_name] %>
+  DocumentRoot <%= @params[:docroot] %>
+
+  RewriteEngine On
+
+  # Redirect all non-static requests to unicorn
+  RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+  RewriteRule ^/(.*)$ balancer://unicornservers%{REQUEST_URI} [P,QSA,L]
+
+  <Proxy balancer://unicornservers>
+    BalancerMember http://127.0.0.1:5000
+    Order allow,deny
+    Allow from all
+  </Proxy>
+
+</VirtualHost>

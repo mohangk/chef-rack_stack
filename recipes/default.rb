@@ -25,6 +25,11 @@ group "neo_deploy" do
   members "neo_deploy"
 end
 
+file "/var/lib/apt/periodic/update-success-stamp" do
+  action :delete
+end
+
+include_recipe 'apt'
 include_recipe 'postgresql::server'
 include_recipe 'ruby'
 include_recipe 'git'
@@ -32,6 +37,10 @@ include_recipe 'xml'
 include_recipe 'nodejs'
 include_recipe 'imagemagick'
 include_recipe 'imagemagick::devel'
+include_recipe 'apache2'
+include_recipe 'apache2::mod_proxy'
+include_recipe 'apache2::mod_proxy_http'
+include_recipe 'apache2::mod_proxy_balancer'
 
 package 'make'
 
@@ -102,7 +111,18 @@ application instance_name do
     bundler true
     preload_app true
     worker_processes 10
-    port '8080'
+    port '127.0.0.1:5000'
     worker_timeout 30
   end
+
+end
+
+web_app appname do
+  docroot "#{base_path}/current"
+  template "chef-rack_stack_app.conf.erb"
+  server_name "#{appname}"
+end
+
+apache_site "000-default" do
+  enable false
 end
