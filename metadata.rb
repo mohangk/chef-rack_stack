@@ -1,6 +1,6 @@
 name              "chef_rack-stack"
-maintainer        "Mohan Krishnan"
-maintainer_email  "mohan@neo.com"
+maintainers        "Mohan Krishnan, Abhaya Shenoy, Winston Teo"
+maintainer_email  "mohangk@gmail.com, abhayashenoy@gmail.com, winstonyw@gmail.com"
 license           "Apache 2.0"
 description       "Gets your Rails app up and running"
 version           "0.0.1"
