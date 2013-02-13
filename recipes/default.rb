@@ -20,11 +20,12 @@ user_account deploy_user do
   notifies :reload, resources(:ohai => 'reload_passwd'), :immediately
 end
 
-group "neo_deploy" do
+group "#{deploy_group}" do
   action :create
-  members "neo_deploy"
+  members deploy_user
 end
 
+# to force apt-get update to be run
 file "/var/lib/apt/periodic/update-success-stamp" do
   action :delete
 end
