@@ -8,6 +8,12 @@ instance_name      = "#{appname}_#{rails_environment}"
 db_name            = node['chef-rack_stack']['app']['db']
 db_password        = node['postgresql']['password']['postgres']
 
+include_recipe 'ruby'
+include_recipe 'git'
+include_recipe 'xml'
+include_recipe 'nodejs'
+package 'make'
+
 # Create directory for the app
 directory base_path do
   owner deploy_user
@@ -35,7 +41,6 @@ application instance_name do
   end
 
   before_symlink do
-
     execute 'create_and_migrate_database' do
       command 'bundle exec rake db:create db:migrate'
       user deploy_user
@@ -74,7 +79,6 @@ application instance_name do
     port '127.0.0.1:5000'
     worker_timeout 30
   end
-
 end
 
 
