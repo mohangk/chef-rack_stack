@@ -13,6 +13,7 @@ include_recipe 'git'
 include_recipe 'xml'
 include_recipe 'nodejs'
 package 'make'
+package 'runit'
 
 # Create directory for the app
 directory base_path do
