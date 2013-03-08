@@ -1,5 +1,5 @@
 include_recipe 'chef-rack_stack::users'
 include_recipe 'chef-rack_stack::postgres'
-include_recipe 'chef-rack_stack::rails'
+include_recipe 'chef-rack_stack::bare_git_repo'
 include_recipe 'chef-rack_stack::imagemagick'
 include_recipe 'chef-rack_stack::apache_reverse_proxy'
